@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ./app
+      dockerfile: ../docker/Dockerfile
+    container_name: voice_recognition_app
+    volumes:
+      - ./app:/app
+      - /dev/snd:/dev/snd  # Доступ к аудио устройствам
+      - /dev/video0:/dev/video0  # USB камера
+      - /dev/video1:/dev/video1  # Дополнительная USB камера
+    devices:
+      - /dev/snd  # Аудио устройства хоста
+      - /dev/video0  # USB камера
+      - /dev/video1  # Дополнительная USB камера
+    environment:
+      - PULSE_SERVER=unix:/tmp/pulse-socket
+      - DISPLAY=$DISPLAY
+    volumes:
+      - /tmp/pulse-socket:/tmp/pulse-socket
+      - /etc/machine-id:/etc/machine-id:ro
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    network_mode: host
+    privileged: true  # Для доступа к аудио устройствам
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    ports:
+      - "8000:8000"  # Если понадобится веб-интерфейс
